@@ -66,6 +66,7 @@ public class DDNetSimple : MonoBehaviour
         if (!isServer && t_searchTimeout < 0f)
         {
             StartServer();
+            StartClient(true);
         }
     }
 
@@ -81,18 +82,27 @@ public class DDNetSimple : MonoBehaviour
 
         // parse address
         serverAddress = fromAddress.Substring(fromAddress.LastIndexOf(':') + 1);
-        StartClient();
+        StartClient(false);
     }
 
 
-    void StartClient()
+    void StartClient(bool local)
     {
         if (netClient != null) return;
-        Debug.Log("connecting to: " + serverAddress + ":" + portGame.ToString());
 
-        netClient = new NetworkClient();
+        if(local) // client also functions as host
+        {
+            Debug.Log("connecting to: localhost:" + portGame.ToString());
+            netClient = ClientScene.ConnectLocalServer();
+        } 
+        else // somebody else is hosting
+        {
+            Debug.Log("connecting to: " + serverAddress + ":" + portGame.ToString());
+            netClient = new NetworkClient();
+            netClient.Connect(serverAddress, portGame);
+        } 
+
         netClient.RegisterHandler(MsgType.Connect, OnConnectToServer);
-        netClient.Connect(serverAddress, portGame);
     }
 
     // client function
@@ -129,7 +139,7 @@ public class DDNetSimple : MonoBehaviour
     {
         // Display network state
         if(isSearching) GUI.Box(new Rect(10, 10, 220, 20), "searching ...");
-        else if(isServer) GUI.Box(new Rect(10, 10, 220, 20), "server");
+        else if(isServer) GUI.Box(new Rect(10, 10, 220, 20), "HOST");
         else if(isConnected) GUI.Box(new Rect(10, 10, 220, 20), "connected!");
         else if(netClient != null) GUI.Box(new Rect(10, 10, 220, 20), "connecting to " + serverAddress + ":" + portGame);
     }
