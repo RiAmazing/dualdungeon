@@ -6,15 +6,16 @@ using System.Net;
 using UnityEngine.Networking;
 
 
-public class DDNetSimple : NetworkDiscovery
+public class DDNetSimple : MonoBehaviour
 {
 
     static DDNetSimple instance = null;
+    DDNetDiscovery netDiscovery;
 
-    public int port = 7755;
-    public float t_searchTimeout = 5f;
+    public int portBroadcast = 7754;
+    public int portGame = 7755;
+    float t_searchTimeout = 5f;
 
-    bool discovery = true;
     bool searching = false;
     bool server = false;
     bool client = false;
@@ -22,51 +23,49 @@ public class DDNetSimple : NetworkDiscovery
     void Awake()
     {
         instance = this;
-    }
-
-    public override void OnReceivedBroadcast(string fromAddress, string data)
-    {
-        Debug.Log("recived broadcast: " + fromAddress);
-        NetworkManager.singleton.networkAddress = fromAddress;
-        NetworkManager.singleton.StartClient();
-        discovery = false;
+        netDiscovery = gameObject.AddComponent<DDNetDiscovery>();
+        netDiscovery.ddnet = this;
+        netDiscovery.broadcastPort = portBroadcast;
+        //netDiscovery.showGUI = false;
     }
 
     void Update()
     {
         UpdateDiscovery();
-
     }
 
     void UpdateDiscovery()
     {
-        if (!discovery) return;
+        if (t_searchTimeout < -1f) return;
         t_searchTimeout -= Time.deltaTime;    // update connection timer
 
         // initially: search for games
         if (t_searchTimeout > 1f && !searching)
         {
             Debug.Log("attempt client");
-            Initialize();
-            StartAsClient(); // network broadcast client
+            netDiscovery.Initialize();
+            netDiscovery.StartAsClient(); // network broadcast client
             searching = true;
-        }
-
-        // 1sec before timeout: stop searching
-        if (t_searchTimeout < 1f && searching)
-        {
-            searching = false;
-            StopBroadcast();
         }
 
         // after timeout: start server
         if (!server && t_searchTimeout < 0f)
         {
+            // stop searching
+            searching = false;
+            netDiscovery.StopBroadcast();
+
+            // start server
             Debug.Log("start server");
             server = true;
-            Initialize();
-            StartAsServer(); // network broadcast server
-            NetworkServer.Listen(port);
+            netDiscovery.Initialize();
+            netDiscovery.StartAsServer(); // network broadcast server
+            NetworkServer.Listen(portGame);
         }
+    }
+
+    public void OnReceivedBroadcast(string fromAddress, string data)
+    {
+        Debug.Log("recived broadcast: " + fromAddress);
     }
 }
