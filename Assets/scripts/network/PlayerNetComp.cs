@@ -22,14 +22,9 @@ public class PlayerNetComp : MonoBehaviour {
 
     void SendUpdate()
     {
-        Byte[] buffer = DDNet.GetSendBuffer();
-
-
-        DDNet.BufferWriteFloat(buffer, 0, transform.position.x);
-        DDNet.BufferWriteFloat(buffer, 4, transform.position.z);
-
-
-        DDNet.SendBuffer();
-
+        DDNet.SendJson(DDNet.ToJsonObj(
+            DDNet.ToJsonVal("x", transform.position.x),
+            DDNet.ToJsonVal("z", transform.position.z)
+        ));
     }
 }
