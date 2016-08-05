@@ -19,6 +19,7 @@ public class DDNetSimple : MonoBehaviour
 
     bool isSearching = false;
     bool isServer = false;
+    bool isConnected = false;
 
     NetworkClient netClient;
 
@@ -74,6 +75,8 @@ public class DDNetSimple : MonoBehaviour
 
     public void OnReceivedBroadcast(string fromAddress, string data)
     {
+        if (netClient != null) return;
+
         // stop broadcasting
         Destroy(netDiscovery);
         netDiscovery = null;
@@ -85,13 +88,22 @@ public class DDNetSimple : MonoBehaviour
 
         // connect to server
         netClient = new NetworkClient();
-        netClient.RegisterHandler(MsgType.Connect, OnConnected);
-        netClient.Connect("192.168.1.8", portGame);
+        netClient.RegisterHandler(MsgType.Connect, OnConnect);
+        netClient.Connect(serverAddress, portGame);
     }
 
     // client function
-    public void OnConnected(NetworkMessage netMsg)
+    public void OnConnect(NetworkMessage netMsg)
     {
-        Debug.Log("Connected to server");
+        Debug.Log("Connected!");
+        isConnected = true;
+    }
+
+    void OnGUI()
+    {
+        // Make a background box
+        GUI.Box(new Rect(10, 10, 100, 20), isServer ? "server" : "client");
+        GUI.Box(new Rect(10, 40, 100, 20), serverAddress);
+        if(!isServer) GUI.Box(new Rect(10, 70, 100, 20), isConnected ? "connected!" : "connecting ...");
     }
 }
