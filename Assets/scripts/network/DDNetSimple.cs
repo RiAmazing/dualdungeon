@@ -14,8 +14,10 @@ public class DDNetSimple : NetworkDiscovery
     public int port = 7755;
     public float t_searchTimeout = 5f;
 
+    bool discovery = true;
     bool searching = false;
     bool server = false;
+    bool client = false;
 
     void Awake()
     {
@@ -24,53 +26,47 @@ public class DDNetSimple : NetworkDiscovery
 
     public override void OnReceivedBroadcast(string fromAddress, string data)
     {
-        Debug.Log("recived broadcast");
+        Debug.Log("recived broadcast: " + fromAddress);
         NetworkManager.singleton.networkAddress = fromAddress;
         NetworkManager.singleton.StartClient();
-    }
-
-
-    public void OnConnected(NetworkMessage netMsg)
-    {
-        Debug.Log("Connected to server");
+        discovery = false;
     }
 
     void Update()
     {
         UpdateDiscovery();
 
-        Debug.Log("bcast: " + broadcastsReceived.Count.ToString());
     }
 
     void UpdateDiscovery()
     {
+        if (!discovery) return;
         t_searchTimeout -= Time.deltaTime;    // update connection timer
 
         // initially: search for games
-        if (t_searchTimeout > 0f && !searching)
+        if (t_searchTimeout > 1f && !searching)
         {
             Debug.Log("attempt client");
             Initialize();
-            StartAsClient();
+            StartAsClient(); // network broadcast client
             searching = true;
         }
+
+        // 1sec before timeout: stop searching
+        if (t_searchTimeout < 1f && searching)
+        {
+            searching = false;
+            StopBroadcast();
+        }
+
         // after timeout: start server
         if (!server && t_searchTimeout < 0f)
         {
-            // stop searching
-            searching = false;
+            Debug.Log("start server");
             server = true;
-            StopBroadcast();
             Initialize();
-            StartAsServer();
-
-            StartServer();
+            StartAsServer(); // network broadcast server
+            NetworkServer.Listen(port);
         }
-    }
-
-    void StartServer()
-    {
-        Debug.Log("start server");
-        NetworkServer.Listen(port);
     }
 }
