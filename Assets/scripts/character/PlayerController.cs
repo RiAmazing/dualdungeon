@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
-public class PlayerController : MonoBehaviour {
+public class PlayerController : NetworkBehaviour {
 
     Character character;
 
@@ -11,7 +12,6 @@ public class PlayerController : MonoBehaviour {
 	}
 	
 	void Update () {
-	
 
         if(Input.GetMouseButtonDown(0))
         {

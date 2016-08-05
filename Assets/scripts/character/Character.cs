@@ -1,6 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+
+
+public struct CharacterNetMsg
+{
+    public int teamid;
+    public int id;
+    public float health;
+    public Vector3 pos;
+}
+
 public class Character : MonoBehaviour {
 
 

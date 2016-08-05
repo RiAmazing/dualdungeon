@@ -40,13 +40,14 @@ public class DDNetSimple : MonoBehaviour
         UpdateDiscovery();
     }
 
+
     void UpdateDiscovery()
     {
         if (netDiscovery == null) return;
         t_searchTimeout -= Time.deltaTime;    // update connection timer
 
         // initially: search for games
-        if ( !isSearching && t_searchTimeout > 1f)
+        if (!isSearching && t_searchTimeout > 1f)
         {
             Debug.Log("DDNet: Searching server ...");
             netDiscovery.Initialize();
@@ -64,19 +65,15 @@ public class DDNetSimple : MonoBehaviour
         // after timeout: start server
         if (!isServer && t_searchTimeout < 0f)
         {
-            // start server
-            Debug.Log("DDNet: Server started at " + Network.player.ipAddress + ":" + portGame);
-            isServer = true;
-            netDiscovery.Initialize();
-            netDiscovery.StartAsServer(); // network broadcast server
-            NetworkServer.Listen(portGame);
+            StartServer();
         }
     }
 
+
+    // ---------------------------- CLIENT -------------------------------
+
     public void OnReceivedBroadcast(string fromAddress, string data)
     {
-        if (netClient != null) return;
-
         // stop broadcasting
         Destroy(netDiscovery);
         netDiscovery = null;
@@ -84,26 +81,56 @@ public class DDNetSimple : MonoBehaviour
 
         // parse address
         serverAddress = fromAddress.Substring(fromAddress.LastIndexOf(':') + 1);
+        StartClient();
+    }
+
+
+    void StartClient()
+    {
+        if (netClient != null) return;
         Debug.Log("connecting to: " + serverAddress + ":" + portGame.ToString());
 
-        // connect to server
         netClient = new NetworkClient();
-        netClient.RegisterHandler(MsgType.Connect, OnConnect);
+        netClient.RegisterHandler(MsgType.Connect, OnConnectToServer);
         netClient.Connect(serverAddress, portGame);
     }
 
     // client function
-    public void OnConnect(NetworkMessage netMsg)
+    public void OnConnectToServer(NetworkMessage netMsg)
     {
         Debug.Log("Connected!");
         isConnected = true;
     }
 
+
+    // ---------------------------- SERVER -------------------------------
+
+
+    void StartServer()
+    {
+        Debug.Log("DDNet: Server started at " + Network.player.ipAddress + ":" + portGame);
+        isServer = true;
+        netDiscovery.Initialize();
+        netDiscovery.StartAsServer(); // network broadcast server
+        NetworkServer.Listen(portGame);
+        NetworkServer.RegisterHandler(MsgType.Connect, OnPlayerConnect);
+    }
+
+
+    void OnPlayerConnect(NetworkMessage netMsg)
+    {
+        Debug.Log("Player Joined!");
+    }
+
+
+    // -------- DEBUG -------------------------------------
+
     void OnGUI()
     {
-        // Make a background box
-        GUI.Box(new Rect(10, 10, 100, 20), isServer ? "server" : "client");
-        GUI.Box(new Rect(10, 40, 100, 20), serverAddress);
-        if(!isServer) GUI.Box(new Rect(10, 70, 100, 20), isConnected ? "connected!" : "connecting ...");
+        // Display network state
+        if(isSearching) GUI.Box(new Rect(10, 10, 220, 20), "searching ...");
+        else if(isServer) GUI.Box(new Rect(10, 10, 220, 20), "server");
+        else if(isConnected) GUI.Box(new Rect(10, 10, 220, 20), "connected!");
+        else if(netClient != null) GUI.Box(new Rect(10, 10, 220, 20), "connecting to " + serverAddress + ":" + portGame);
     }
 }
