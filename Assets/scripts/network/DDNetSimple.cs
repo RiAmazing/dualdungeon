@@ -6,6 +6,17 @@ using System.Net;
 using UnityEngine.Networking;
 
 
+public class TestMsgTypes {
+    public static short MSG_TEST = 1000;
+};
+
+public class TestMsg : MessageBase
+{
+    public int test;
+}
+
+
+
 public class DDNetSimple : MonoBehaviour
 {
 
@@ -15,7 +26,7 @@ public class DDNetSimple : MonoBehaviour
     string serverAddress = null;
     public int portBroadcast = 7754;
     public int portGame = 7755;
-    float t_searchTimeout = 8f;
+    public float t_searchTimeout = 8f;
 
     bool isSearching = false;
     bool isServer = false;
@@ -103,6 +114,7 @@ public class DDNetSimple : MonoBehaviour
         } 
 
         netClient.RegisterHandler(MsgType.Connect, OnConnectToServer);
+        netClient.RegisterHandler(TestMsgTypes.MSG_TEST, OnTestMsg);
     }
 
     // client function
@@ -110,6 +122,14 @@ public class DDNetSimple : MonoBehaviour
     {
         Debug.Log("Connected!");
         isConnected = true;
+    }
+
+
+    // client function
+    public void OnTestMsg(NetworkMessage netMsg)
+    {
+        TestMsg msg = netMsg.ReadMessage<TestMsg>();
+        Debug.Log(msg.test);
     }
 
 
@@ -130,6 +150,7 @@ public class DDNetSimple : MonoBehaviour
     void OnPlayerConnect(NetworkMessage netMsg)
     {
         Debug.Log("Player Joined!");
+        NetworkServer.SendToAll(TestMsgTypes.MSG_TEST, new TestMsg() { test = 3 });
     }
 
 
