@@ -4,7 +4,7 @@ using UnityEngine.Networking;
 
 public class DDNetDiscovery : NetworkDiscovery {
 
-    public DDNetSimple ddnet;
+    public DDNet ddnet;
 
     public override void OnReceivedBroadcast(string fromAddress, string data)
     {

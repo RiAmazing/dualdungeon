@@ -24,8 +24,8 @@ public class CharacterManager : MonoBehaviour {
         {
             for(var c = 0; c < teams[t].Count; c++)
             {
-                AttemptAttack(teams[t][c]);
-                DDNetSimple.BroadcastCharacterState(teams[t][c]);
+                if (teams[t][c] != null) AttemptAttack(teams[t][c]);
+                //DDNetSimple.BroadcastCharacterState(teams[t][c]);
             }
         }
 	}
@@ -42,7 +42,7 @@ public class CharacterManager : MonoBehaviour {
                 {
                     for (var c = 0; c < teams[t].Count; c++)
                     {
-                        if(attacker.attackDistance > Vector3.Distance(attacker.transform.position, teams[t][c].transform.position))
+                        if(teams[t][c] != null && attacker.attackDistance > Vector3.Distance(attacker.transform.position, teams[t][c].transform.position))
                         {
                             teams[t][c].OnAttack(attacker.damage);
                         }
@@ -84,11 +84,5 @@ public class CharacterManager : MonoBehaviour {
         }
 
         return enemy;
-    }
-
-    public static void OnSyncCharacter(NetworkMessage netMsg)
-    {
-        var msg = netMsg.ReadMessage<CharacterSyncMsg>();
-        instance.teams[msg.teamID][msg.id].UpdateState(msg);
     }
 }

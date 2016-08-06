@@ -13,18 +13,18 @@ public class PlayerNetComp : MonoBehaviour {
 	void Update ()
     {
         t_msg += Time.deltaTime;
-        if (t_msg > DDNet.updateTick)
+        if (t_msg > DDNetOpt.updateTick)
         {
-            t_msg -= DDNet.updateTick;
+            t_msg -= DDNetOpt.updateTick;
             SendUpdate();
         }
 	}
 
     void SendUpdate()
     {
-        DDNet.SendJson(DDNet.ToJsonObj(
-            DDNet.ToJsonVal("x", transform.position.x),
-            DDNet.ToJsonVal("z", transform.position.z)
+        DDNetOpt.SendJson(DDNetOpt.ToJsonObj(
+            DDNetOpt.ToJsonVal("x", transform.position.x),
+            DDNetOpt.ToJsonVal("z", transform.position.z)
         ));
     }
 }
