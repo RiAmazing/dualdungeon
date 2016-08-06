@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -24,6 +25,7 @@ public class CharacterManager : MonoBehaviour {
             for(var c = 0; c < teams[t].Count; c++)
             {
                 AttemptAttack(teams[t][c]);
+                DDNetSimple.BroadcastCharacterState(teams[t][c]);
             }
         }
 	}
@@ -52,11 +54,12 @@ public class CharacterManager : MonoBehaviour {
 
     public static void AddCharacter(Character character)
     {
+        character.id = instance.teams[character.teamID].Count;
         instance.teams[character.teamID].Add(character);
     }
     public static void RemoveCharacter(Character character)
     {
-        instance.teams[character.teamID].Remove(character);
+        //instance.teams[character.teamID].Remove(character);
     }
 
     public static Character GetClosestEnemy(Character character)
@@ -81,5 +84,11 @@ public class CharacterManager : MonoBehaviour {
         }
 
         return enemy;
+    }
+
+    public static void OnSyncCharacter(NetworkMessage netMsg)
+    {
+        var msg = netMsg.ReadMessage<CharacterSyncMsg>();
+        instance.teams[msg.teamID][msg.id].UpdateState(msg);
     }
 }

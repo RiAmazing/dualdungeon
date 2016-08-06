@@ -1,20 +1,22 @@
 ﻿using UnityEngine;
+using UnityEngine.Networking;
 using System.Collections;
 
 
 
-public struct CharacterNetMsg
+public class CharacterSyncMsg : MessageBase
 {
-    public int teamid;
+    public int teamID;
     public int id;
     public float health;
     public Vector3 pos;
 }
 
-public class Character : MonoBehaviour {
+public class Character : NetworkBehaviour {
 
 
     public int teamID = 0;
+    public int id = 0;
     public float damage = 1f;
     public float attackDistance = 1f;
     public float viewDistance = 10f;
@@ -23,6 +25,7 @@ public class Character : MonoBehaviour {
 
     float t_attack = 0;
     Vector3 targetPos = Vector3.zero;
+
 
 	void Start ()
     {
@@ -86,5 +89,21 @@ public class Character : MonoBehaviour {
     {
         CharacterManager.RemoveCharacter(this);
         Destroy(gameObject);
+    }
+
+    public CharacterSyncMsg GetStateMsg()
+    {
+        return new CharacterSyncMsg(){
+            teamID = teamID,
+            id = id,
+            health = health,
+            pos = transform.position
+        };
+    }
+
+    public void UpdateState(CharacterSyncMsg msg)
+    {
+        health = msg.health;
+        transform.position = msg.pos;
     }
 }

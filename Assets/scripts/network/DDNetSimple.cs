@@ -6,14 +6,12 @@ using System.Net;
 using UnityEngine.Networking;
 
 
-public class TestMsgTypes {
-    public static short MSG_TEST = 1000;
-};
-
-public class TestMsg : MessageBase
+public class DDNetMsgType 
 {
-    public int test;
-}
+
+    public static short SYNC_CHARACTER = 1001;
+
+};
 
 
 
@@ -33,6 +31,8 @@ public class DDNetSimple : MonoBehaviour
     bool isConnected = false;
 
     NetworkClient netClient;
+
+    public Character player;
 
     void Awake()
     {
@@ -100,6 +100,7 @@ public class DDNetSimple : MonoBehaviour
     void StartClient(bool local)
     {
         if (netClient != null) return;
+        player.gameObject.SetActive(true);
 
         if(local) // client also functions as host
         {
@@ -114,7 +115,8 @@ public class DDNetSimple : MonoBehaviour
         } 
 
         netClient.RegisterHandler(MsgType.Connect, OnConnectToServer);
-        netClient.RegisterHandler(TestMsgTypes.MSG_TEST, OnTestMsg);
+        netClient.RegisterHandler(DDNetMsgType.SYNC_CHARACTER, 
+            GameObject.Find("Game").GetComponent<CharacterManager>().OnSyncCharacter);
     }
 
     // client function
@@ -124,13 +126,6 @@ public class DDNetSimple : MonoBehaviour
         isConnected = true;
     }
 
-
-    // client function
-    public void OnTestMsg(NetworkMessage netMsg)
-    {
-        TestMsg msg = netMsg.ReadMessage<TestMsg>();
-        Debug.Log(msg.test);
-    }
 
 
     // ---------------------------- SERVER -------------------------------
@@ -150,9 +145,13 @@ public class DDNetSimple : MonoBehaviour
     void OnPlayerConnect(NetworkMessage netMsg)
     {
         Debug.Log("Player Joined!");
-        NetworkServer.SendToAll(TestMsgTypes.MSG_TEST, new TestMsg() { test = 3 });
     }
 
+    public static void BroadcastCharacterState(Character character)
+    {
+        if(!instance.isServer) return;
+        NetworkServer.SendToAll(DDNetMsgType.SYNC_CHARACTER, character.GetStateMsg());
+    }
 
     // -------- DEBUG -------------------------------------
 
