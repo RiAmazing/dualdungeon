@@ -9,4 +9,10 @@ public class DDNetManager : NetworkManager {
 	{
 		//Debug.Log ("OnPlayerConnected " + conn.connectionId.ToString());
 	}
+
+	public virtual void OnClientConnect(NetworkConnection conn)
+	{
+		Debug.Log("onclientconnect");
+	}
+
 }

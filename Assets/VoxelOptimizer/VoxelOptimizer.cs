@@ -8,11 +8,15 @@ using Assets.VoxelOptimizer;
 
 public class VoxelOptimizer : AssetPostprocessor
 {
+
+
+    // LISTEN FOR UNITY ASSET CHANGED EVENT
     static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
     {
         CheckForPlyFiles(importedAssets);
     }
 
+    // if asset is .ply file process it
     static void CheckForPlyFiles(string[] assets)
     {
         foreach(var path in assets)
@@ -53,17 +57,15 @@ public class VoxelOptimizer : AssetPostprocessor
         // convert .ply -> .png, .mtl, .obj
         var model = VoxelModelPly.LoadModel(path);
 
-
-
         // ---- EXPORT
         // export texture
         string texPath = ChangeExtension(path, ".png");
-        WritePng(texPath, model.tex);
+        //WritePng(texPath, model.tex);
         texPath = texPath.Split('/')[texPath.Split('/').Length - 1];
 
         // export material
         string mtlPath = ChangeExtension(path, ".mtl");
-        WriteTextFile(mtlPath, model.ToMtl(texPath));
+        //WriteTextFile(mtlPath, model.ToMtl(texPath));
 
         // export obj
         WriteTextFile(ChangeExtension(path, ".obj"), model.ToObj(mtlPath));

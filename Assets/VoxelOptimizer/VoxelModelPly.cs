@@ -99,50 +99,39 @@ namespace Assets.VoxelOptimizer
 
         void generateTexture()
         {
-            int numCol = 0;
-            bool added = false;
-            for (var i = 0; i < numVerts; i++ )
-            {
-                added = false;
-
-                // check if color already in color palette
-                for(var j = 0; j < numCol; j++)
-                {
-                    if (vertColor[i * 3] == colorPalette[j * 3] &&
-                        vertColor[i * 3 + 1] == colorPalette[j * 3 + 1] &&
-                        vertColor[i * 3 + 2] == colorPalette[j * 3 + 2])
-                    {
-                        added = true;
-                        vertColor[i * 3] = j;
-                        break;
-                    }
-
-                }
-
-                // if not in palette, add to palette
-                if (!added)
-                {
-                    // save col in palette list
-                    colorPalette.Add(vertColor[i * 3]);
-                    colorPalette.Add(vertColor[i * 3 + 1]);
-                    colorPalette.Add(vertColor[i * 3 + 2]);
-
-                    vertColor[i * 3] = numCol; // set first off vertCol triple to col index
-                    numCol++;
-                }
-            }
-
-            tex_size = Mathf.FloorToInt(Mathf.Sqrt(colorPalette.Count)) + 1;
+            // initialize square texture with correct size
+            tex_size = Mathf.FloorToInt(Mathf.Sqrt(numVerts)) + 1;
             tex = new Texture2D(tex_size, tex_size, TextureFormat.RGB24, false);
 
-            for (var i = 0; i < numVerts; i++)
+            for(var i = 0; i < numFaces; i++)
             {
+                int v1 = faces[i * 3 + 0];
+                int v2 = faces[i * 3 + 1];
+                int v3 = faces[i * 3 + 2];
+
+                // get first color on each face
+                var col = new Color(
+                    (float)vertColor[v1] / 255, 
+                    (float)vertColor[v1 + 1] / 255, 
+                    (float)vertColor[v1 + 2] / 255
+                );
+
+                // create pixel on texture
                 var u = i % tex_size;
                 var v = Mathf.FloorToInt(i / tex_size);
-                var col = new Color(vertColor[i * 3] / 255, vertColor[i * 3 + 1] / 255, vertColor[i * 3 + 2] / 255);
-                tex.SetPixel(v, u, col);
+                tex.SetPixel(u, tex_size - 1 - v, col);
 
-                uv[i] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
+                // TODO : NOT WORKING - probably because of some sampleing issue
+                // assign uvs for face verticies
+                uv[v1] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
+                uv[v2] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
+                uv[v3] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
+
+                /*
+                Debug.Log(i.ToString() + ": " + v1.ToString() + ", "+ v2.ToString() + ", "+ v3.ToString() + " | " + 
+                    col.ToString() + " ||| " + vertColor[v1].ToString() + ", " + vertColor[v1 +1].ToString() + ", " + 
+                    vertColor[v1 + 2].ToString());
+                */
             }
         }
 
