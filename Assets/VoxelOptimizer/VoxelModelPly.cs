@@ -116,22 +116,19 @@ namespace Assets.VoxelOptimizer
                     (float)vertColor[v1 + 2] / 255
                 );
 
+
+
                 // create pixel on texture
                 var u = i % tex_size;
                 var v = Mathf.FloorToInt(i / tex_size);
-                tex.SetPixel(u, tex_size - 1 - v, col);
+                if(v < 4) col = new Color(0f, 1f, 0f);
+                tex.SetPixel(u, v, col);
 
                 // TODO : NOT WORKING - probably because of some sampleing issue
                 // assign uvs for face verticies
                 uv[v1] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
                 uv[v2] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
                 uv[v3] = new Vector2((float)u / (float)tex_size, (float)v / (float)tex_size);
-
-                /*
-                Debug.Log(i.ToString() + ": " + v1.ToString() + ", "+ v2.ToString() + ", "+ v3.ToString() + " | " + 
-                    col.ToString() + " ||| " + vertColor[v1].ToString() + ", " + vertColor[v1 +1].ToString() + ", " + 
-                    vertColor[v1 + 2].ToString());
-                */
             }
         }
 

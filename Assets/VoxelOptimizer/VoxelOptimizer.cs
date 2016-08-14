@@ -2,6 +2,7 @@
 using UnityEngine;
 using UnityEditor;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Assets.VoxelOptimizer;
@@ -9,6 +10,7 @@ using Assets.VoxelOptimizer;
 public class VoxelOptimizer : AssetPostprocessor
 {
 
+    static List<string> generatedTextures = new List<string>();
 
     // LISTEN FOR UNITY ASSET CHANGED EVENT
     static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
@@ -24,6 +26,23 @@ public class VoxelOptimizer : AssetPostprocessor
             var subpath = path.Split('/');
             if (subpath[subpath.Length - 1].Contains(".ply")) ProcessPlyFile(path);
         }
+    }
+
+    void OnPreprocessTexture()
+    {
+        // check if new texture was created by voxelpotimizer
+        if(generatedTextures.Contains(assetPath)) 
+        {
+            generatedTextures.Remove(assetPath);
+
+            TextureImporter importer = assetImporter as TextureImporter;
+            importer.textureFormat = TextureImporterFormat.AutomaticTruecolor;
+            importer.filterMode = FilterMode.Point;
+            Object asset = AssetDatabase.LoadAssetAtPath(importer.assetPath, typeof(Texture2D));
+            if (asset) {
+                EditorUtility.SetDirty(asset);
+            }
+         }
     }
 
     static void WriteTextFile(string path, string content)
@@ -47,9 +66,6 @@ public class VoxelOptimizer : AssetPostprocessor
     }
 
 
-
-
-
     static void ProcessPlyFile(string path)
     {
         Debug.Log("updating: " + path);
@@ -57,15 +73,19 @@ public class VoxelOptimizer : AssetPostprocessor
         // convert .ply -> .png, .mtl, .obj
         var model = VoxelModelPly.LoadModel(path);
 
+        // TODO : optimize
+
         // ---- EXPORT
         // export texture
         string texPath = ChangeExtension(path, ".png");
-        //WritePng(texPath, model.tex);
+        WritePng(texPath, model.tex);
+        generatedTextures.Add(texPath);
+        Debug.Log("generated " + texPath);
         texPath = texPath.Split('/')[texPath.Split('/').Length - 1];
 
         // export material
         string mtlPath = ChangeExtension(path, ".mtl");
-        //WriteTextFile(mtlPath, model.ToMtl(texPath));
+        WriteTextFile(mtlPath, model.ToMtl(texPath));
 
         // export obj
         WriteTextFile(ChangeExtension(path, ".obj"), model.ToObj(mtlPath));
