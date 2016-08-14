@@ -121,7 +121,6 @@ namespace Assets.VoxelOptimizer
                 // create pixel on texture
                 var u = i % tex_size;
                 var v = Mathf.FloorToInt(i / tex_size);
-                if(v < 4) col = new Color(0f, 1f, 0f);
                 tex.SetPixel(u, v, col);
 
                 // TODO : NOT WORKING - probably because of some sampleing issue

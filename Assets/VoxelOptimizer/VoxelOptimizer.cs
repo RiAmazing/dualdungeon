@@ -51,6 +51,14 @@ public class VoxelOptimizer : AssetPostprocessor
         file.Write(content);
         file.Close();
     }
+    
+    static void WritePng(string path, Texture2D tex)
+    {
+       byte[] bytes = tex.EncodeToPNG();
+       var file = File.Create(path);
+       file.Write(bytes, 0, bytes.Length);
+       file.Close();
+   }
 
     static string GetFilename(string path)
     {
