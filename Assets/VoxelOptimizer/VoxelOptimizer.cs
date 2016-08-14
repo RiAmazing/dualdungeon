@@ -87,7 +87,13 @@ public class VoxelOptimizer : AssetPostprocessor
 
         // TODO : optimize
 
-        // ---- EXPORT
+        // export
+        ExportOBJ(model, path);
+        //ExportFBX(model, path);
+    }
+
+    static void ExportOBJ(VoxelModelPly model, string path)
+    {
         // export texture
         string texPath = ChangeExtension(path, ".png");
         WritePng(texPath, model.tex);
@@ -101,6 +107,11 @@ public class VoxelOptimizer : AssetPostprocessor
 
         // export obj
         WriteTextFile(ChangeExtension(path, ".obj"), model.ToObj(mtlPath));
+    }
+
+    static void ExportFBX(VoxelModelPly model, string path)
+    {
+        WriteTextFile(ChangeExtension(path, ".fbx"), model.ToFBX(GetFilename(path)));
     }
 
 
