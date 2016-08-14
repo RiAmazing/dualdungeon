@@ -181,5 +181,61 @@ namespace Assets.VoxelOptimizer
             return obj;
         }
 
+        public string ToFBX(string fname)
+        {
+            // header
+            string fbx = "; FBX 6.1.0 project file\n";
+            fbx += "; Created with VoxelOptimizer\n; Copyright Jeremias Eichelbaum - All rights reserved\n\n; Object definitions\n;------------------------------------------------------------------\n\n";
+            fbx += "Definitions:  {\n Version: 100\n Count: 1\n ObjectType: \"Model\" {\n  Count: 1\n }\n}\n";
+
+            // models
+            fbx += "\n; Object properties\n;------------------------------------------------------------------\n\n";
+            fbx += "Objects:  {\n Model: \"Model::" + fname + "\", \"Mesh\" {\n  Version: 232\n  Properties60:  {\n   Property: \"Visibility\", \"Visibility\", \"A+\",1\n   Property: \"Lcl Translation\", \"Lcl Translation\", \"A+\",0.000000000000000,0.000000000000000,0.000000000000000\n   Property: \"Lcl Rotation\", \"Lcl Rotation\", \"A+\",0.000000000000000,0.000000000000000,0.000000000000000\n   Property: \"Lcl Scaling\", \"Lcl Scaling\", \"A+\",1.000000000000000,1.000000000000000,1.000000000000000\n  }\n";
+
+            // ------ START OBJECT
+            // verticies
+            fbx += "  Vertices: ";
+            for (var i = 0; i < numVerts; i++) {
+                if (i > 0) fbx += ",";
+                fbx += (vert[i].x * 100).ToString("#0.000000") + "," + (vert[i].y * 100).ToString("#0.000000") + "," + (vert[i].z * 100).ToString("#0.000000");
+            }
+            // indicies
+            fbx += "\n  PolygonVertexIndex: ";
+            for (var i = 0; i < numFaces; i++) {
+                if (i > 0) fbx += ",";
+                fbx += faces[i*3].ToString() + "," + faces[i*3 + 1].ToString() + "," +  ((faces[i*3+2] +1) * -1).ToString();
+            }
+            fbx += "\n  GeometryVersion: 124\n";
+
+            // EXPORT VERTEX COLORS?
+            if (true) 
+            {
+                // save each RGBA color per vertex
+                fbx += "  LayerElementColor: 0 {\n   Version: 101\n   Name: \"Col\"\n   MappingInformationType: \"ByPolygonVertex\"\n   ReferenceInformationType: \"IndexToDirect\"\n   Colors: ";
+                for (var i = 0; i < numVerts; i++) {
+                    if (i > 0) fbx += ",";
+                    fbx += ((float)vertColor[i * 3] / 255f).ToString() + "," + ((float)vertColor[i * 3 + 1] / 255f).ToString() + "," + ((float)vertColor[i * 3 + 2] / 255f).ToString() + ",255";
+                }
+
+                // assign vertex colors per face vertex
+                fbx += "\n   ColorIndex: ";
+                for (var i = 0; i < numFaces; i++) {
+                    if (i > 0) fbx += ",";
+                    fbx += faces[i*3].ToString().ToString() + "," + faces[i*3+1].ToString().ToString() + "," +  faces[i*3+2].ToString().ToString();
+                }
+
+                fbx += "\n  }\n  Layer: 0 {\n   Version: 100\n   LayerElement:  {\n    Type: \"LayerElementColor\"\n    TypedIndex: 0\n   }\n  }\n";
+            }
+
+            // ------ END OBJECT
+            fbx += " }\n}\n";
+
+            // connections
+            fbx += "\n; Object connections\n;------------------------------------------------------------------\n\n";
+            fbx += "Connections:  {\n Connect: \"OO\", \"Model::" + fname + "\", \"Model::Scene\"\n}\n";
+
+            return fbx;
+        }
+
     }
 }

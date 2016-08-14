@@ -33,14 +33,18 @@ public class VoxelOptimizer : AssetPostprocessor
         file.Close();
     }
 
-    static void WritePng(string path, Texture2D tex)
+    static string GetFilename(string path)
     {
-        byte[] bytes = tex.EncodeToPNG();
-        var file = File.Create(path);
-        file.Write(bytes, 0, bytes.Length);
-        file.Close();
+        // get filename
+        var fname = path.Split('/')[path.Split('/').Length - 1];
+        // remove file extensions
+        while(fname.IndexOf(".mc") != -1 || fname.IndexOf(".ply") != -1)
+        {
+            fname = fname.Substring(0, fname.LastIndexOf("."));
+        }
+        return fname;
     }
-
+    
     static string ChangeExtension(string path, string ext)
     {
         return path.Substring(0, path.LastIndexOf(".ply")) + ext;
@@ -49,26 +53,14 @@ public class VoxelOptimizer : AssetPostprocessor
 
 
 
-
     static void ProcessPlyFile(string path)
     {
-        Debug.Log("updating: " + path);
+        Debug.Log("importing: " + path);
 
-        // convert .ply -> .png, .mtl, .obj
+        // import .ply model
         var model = VoxelModelPly.LoadModel(path);
-
-        // ---- EXPORT
-        // export texture
-        string texPath = ChangeExtension(path, ".png");
-        //WritePng(texPath, model.tex);
-        texPath = texPath.Split('/')[texPath.Split('/').Length - 1];
-
-        // export material
-        string mtlPath = ChangeExtension(path, ".mtl");
-        //WriteTextFile(mtlPath, model.ToMtl(texPath));
-
-        // export obj
-        WriteTextFile(ChangeExtension(path, ".obj"), model.ToObj(mtlPath));
+        // convert & export .fbx model
+        WriteTextFile(ChangeExtension(path, ".fbx"), model.ToFBX(GetFilename(path)));
     }
 
 
