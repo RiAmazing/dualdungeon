@@ -85,4 +85,16 @@ public class CharacterManager : MonoBehaviour {
 
         return enemy;
     }
+
+
+    void OnGUI()
+    {
+        for(var i = 0; i < teams[0].Count; i++)
+        {
+            float h = teams[0][i].health;
+            GUI.Label(new Rect(10, 70 + i * 25, 60, 20), "$CLASS:");
+            GUI.Box(new Rect(70, 70 + i * 25, h, 20), h.ToString());
+        }
+    }
+
 }
